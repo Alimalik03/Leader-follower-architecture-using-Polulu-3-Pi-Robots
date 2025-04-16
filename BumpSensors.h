@@ -39,22 +39,15 @@ class BumpSensors_c {
     }
 
     // Part of the Advanced Exercises for Labsheet 2 (Ignore for now)
-    void initialiseForDigital(bool facing) {      
+    void initialiseForDigital() {      
       // Ensure that the IR LEDs are on for Bump sensing
-      // Approach 2 (Recommended !!!)
-      if (facing){ // leader and follwer facing eachother (leader moves in reverse, follower moves forward)
-        pinMode( EMIT_PIN, INPUT );
-      }
-      // Approach 1 
-      else{ // leader and follower move in the same direction (both move forward)
-        pinMode( EMIT_PIN, OUTPUT );
-        digitalWrite( EMIT_PIN, LOW );
-      }
+      pinMode( EMIT_PIN, OUTPUT );
+      digitalWrite( EMIT_PIN, LOW );
     } // End of initialiseForDigital()
 
     // Part of the Advanced Exercises for Labsheet 2 (Ignore for now)
-    unsigned long readSensorDigital(int sensor_index, bool facing) {
-      initialiseForDigital(facing);
+    unsigned long readSensorDigital(int sensor_index) {
+      initialiseForDigital();
 
       pinMode(sensor_pins[sensor_index], OUTPUT);
       digitalWrite(sensor_pins[sensor_index], HIGH); // starts charging capacitor
@@ -67,7 +60,7 @@ class BumpSensors_c {
 
       while (digitalRead(sensor_pins[sensor_index])) {
         if (micros() - start_time >= 6000){ // 6000us was experimentally found.
-          digitalWrite(sensor_pins[sensor_index], LOW); // if the status didn't change for long time, change it manually.
+          digitalWrite(sensor_pins[sensor_index], LOW); // if the status didn't change for long time, change it manually
         }
       }
 
@@ -80,16 +73,14 @@ class BumpSensors_c {
       return time_diff;   
     } // End of readSensorsDigital()
 
-    void calcCalibratedDigital(bool facing){
-      readings[0] = readSensorDigital(0, facing);
-      readings[1] = readSensorDigital(1, facing);
+    void calcCalibratedDigital(){
+      readings[0] = readSensorDigital(0);
+      readings[1] = readSensorDigital(1);
 
       for (int sensor = 0; sensor < NUM_SENSORS; sensor++){
         if (scaling[sensor] != 0) {  // Ensure scaling is not zero to prevent division by zero
-          // calibrated values are scaled by 100.
-          calibrated[sensor] = ((readings[sensor] - minimum[sensor])*100) / scaling[sensor];
-        } 
-        else {
+          calibrated[sensor] = (readings[sensor] - minimum[sensor]) / scaling[sensor];
+        } else {
           calibrated[sensor] = 0; // Assign a default value if scaling is zero
         }
       }
